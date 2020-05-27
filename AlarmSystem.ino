@@ -1,10 +1,14 @@
+#include <NewTone.h>
+#include <NewPing.h>
 #include <Keypad.h>
+
 #define buzzer 13
 #define trigPin 12
 #define echoPin 11
 #define G 8
 #define B 9
 #define C 10
+#define max_distance 300
 
 const byte numRows= 4; 
 const byte numCols= 4; 
@@ -12,8 +16,9 @@ boolean activated = false;
 int duration, distance;
 boolean enabled = false;
 String tmp = "";
-String password = "22222";
+String password = "11111";
 boolean ring = false;
+NewPing sonar(trigPin, echoPin, max_distance);
 
 char keymap[numRows][numCols]=
 {
@@ -47,6 +52,7 @@ void loop(){
     
     if(keyPressed != NO_KEY){
       tmp += keyPressed;
+      Serial.print(keyPressed);
     }
     
     if(tmp == password){
@@ -57,6 +63,7 @@ void loop(){
       activated = true;
       Serial.print(enabled);
       tmp = "";
+      delay(3000);
     }
     
     if(tmp.length() > 4){
@@ -64,7 +71,7 @@ void loop(){
     } 
   } 
   
-   // cleartrigPin
+   // clear trigPin
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
 
@@ -72,30 +79,31 @@ void loop(){
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
 
-   // read movement
-  duration = pulseIn(echoPin, HIGH);
+  distance = sonar.ping_cm();
 
-   // calculate distance in cm
-  distance = (duration/2) / 29.1;
+  Serial.println(distance);
   
-  if(distance <= 100 && distance >=0){
+  if(distance <= 300 && distance >=10){
     ring = true;
   }
   
   if(ring == true){
-   tone(buzzer, 1000); 
+  //tone(buzzer, 500); 
+  NewTone(buzzer, 500, 0);
   }
   
   char keyPressed = myKeypad.getKey();
   
   if(keyPressed != NO_KEY){
     tmp += keyPressed;
+    Serial.print(keyPressed);
   }
   
   if(tmp == password){
     tmp = "";
     enabled = false;
-    noTone(buzzer);
+    //noTone(buzzer);
+    noNewTone(buzzer);
     ring = false;
   }
 }
